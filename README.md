@@ -2,7 +2,7 @@
 
 Command line tool to migrate Mailman mbox archives to Google Groups.
 
-## Requirments
+## Requirements
 ### Requires the google python API client
 ```
 sudo pip install -U google-api-python-client
