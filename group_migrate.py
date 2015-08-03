@@ -55,15 +55,18 @@ def main(argv):
         )
 
     mbox = mailbox.mbox(flags.mailbox, create=False)
+    i, mboxLen = 0, len(mbox)
+    print "mailbox size: %d messages" % mboxLen
     # create a new mbox with failed messages, to make reruns shorter
     if flags.failed:
         failbox = mailbox.mbox(flags.failed, create=True)
         failbox.lock()
     try:
         for message in mbox:
-            # pprint.pprint(message)
+            i += 1
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
+            print "processing message %s / %s" % (i,mboxLen)
             media = MediaInMemoryUpload(str(message), mimetype='message/rfc822')
             try:
                 request = service.archive().insert(groupId=flags.group,
