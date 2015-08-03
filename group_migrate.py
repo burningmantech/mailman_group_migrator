@@ -9,13 +9,16 @@ import sys
 import mailbox
 import httplib2
 import os
+import logging
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',level=logging.DEBUG)
 
-from apiclient.errors import HttpError
+from apiclient.errors import HttpError,MediaUploadSizeError
 from apiclient.http import BatchHttpRequest
 from apiclient.http import HttpMock
 from apiclient.http import MediaInMemoryUpload
 from apiclient import sample_tools
 from oauth2client.client import AccessTokenRefreshError
+
 
 def main(argv):
     # Declare command-line flags.
@@ -59,23 +62,27 @@ def main(argv):
     try:
         for message in mbox:
             # pprint.pprint(message)
-            print message['message-id']
-            print message['subject']
+            logging.debug("message-id: %s" % message['message-id'] )
+            logging.debug("subject: %s" % message['subject'])
             media = MediaInMemoryUpload(str(message), mimetype='message/rfc822')
-            request = service.archive().insert(groupId=flags.group,
-                                               media_body=media)
-            result = request.execute()
-            print 'Response code was: %s' % result['responseCode']
-            if flags.failed and result['responseCode'] != 'SUCCESS':
-                failbox.add(message)
+            try:
+                request = service.archive().insert(groupId=flags.group,
+                                                   media_body=media)
+                result = request.execute()
+                logging.debug("response: %s" % result['responseCode'])
+                if flags.failed and result['responseCode'] != 'SUCCESS':
+                    failbox.add(message)
+            except (MediaUploadSizeError,HttpError) as e:
+                if flags.failed:
+                    failbox.add(message)
+                logging.error( "%s: %s" % (message['message-id'],str(e)) )
     except AccessTokenRefreshError:
-        print ('The credentials have been revoked or expired, please re-run the '
+        logging.error('The credentials have been revoked or expired, please re-run the '
                'application to re-authorize')
+
     if flags.failed:
         failbox.flush()
         failbox.unlock()
-
-
 
 if __name__ == '__main__':
     main(sys.argv)
