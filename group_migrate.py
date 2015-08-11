@@ -52,6 +52,11 @@ def main(argv):
         '--after',
         help='Only import after date',
         required=False)
+    argparser.add_argument(
+        '-n',
+        '--dryrun',
+        help='Dry-run',
+        action='store_true')
 
     # Authenticate and construct service
     scope = ("https://www.googleapis.com/auth/apps.groups.migration")
@@ -82,6 +87,8 @@ def main(argv):
             logging.debug("subject: %s" % message['subject'])
             logging.debug("date: %s" % message.x_date)
             print "processing message %s / %s" % (i,mboxLen)
+            if(flags.dryrun):
+                continue
             media = MediaInMemoryUpload(str(message), mimetype='message/rfc822')
             try:
                 request = service.archive().insert(groupId=flags.group,
