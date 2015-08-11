@@ -11,6 +11,8 @@ import httplib2
 import os
 import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',level=logging.DEBUG)
+import dateutil.parser
+import pytz
 
 from apiclient.errors import HttpError,MediaUploadSizeError
 from apiclient.http import BatchHttpRequest
@@ -45,6 +47,11 @@ def main(argv):
         '--verbose',
         help='Show progress',
         action='store_true')
+    argparser.add_argument(
+        '-a',
+        '--after',
+        help='Only import after date',
+        required=False)
 
     # Authenticate and construct service
     scope = ("https://www.googleapis.com/auth/apps.groups.migration")
@@ -54,6 +61,9 @@ def main(argv):
         scope=scope
         )
 
+    if (flags.after):
+        flags.after = pytz.timezone('US/Pacific').localize(dateutil.parser.parse(flags.after))
+        logging.info("only migrating messages after date: %s" % flags.after)
     mbox = mailbox.mbox(flags.mailbox, create=False)
     i, mboxLen = 0, len(mbox)
     print "mailbox size: %d messages" % mboxLen
@@ -64,8 +74,13 @@ def main(argv):
     try:
         for message in mbox:
             i += 1
+            message.x_date =  dateutil.parser.parse(message.get('Date'))
+            if(flags.after and ( message.x_date < flags.after)):
+                logging.debug("skipping: date %s is before flags.after" % message.x_date)
+                continue
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
+            logging.debug("date: %s" % message.x_date)
             print "processing message %s / %s" % (i,mboxLen)
             media = MediaInMemoryUpload(str(message), mimetype='message/rfc822')
             try:
