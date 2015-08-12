@@ -67,6 +67,11 @@ def main(argv):
         '--resume',
         help='resume with message #',
         required=False)
+    argparser.add_argument(
+        '-l',
+        '--label',
+        help='import matching label (X-Gmail-Labels)',
+        required=False)
 
     # Authenticate and construct service
     scope = ("https://www.googleapis.com/auth/apps.groups.migration")
@@ -85,6 +90,9 @@ def main(argv):
     if (flags.resume):
         flags.resume = int(flags.resume)
         logging.info("resuming with id# %s" % flags.resume)
+    if (flags.label):
+        logging.info("only importing messags with label \"%s\"" % flags.label)
+
 
     mbox = mailbox.mbox(flags.mailbox, create=False)
     i, mboxLen = 0, len(mbox)
@@ -97,8 +105,17 @@ def main(argv):
         for message in mbox:
             i += 1
             message.x_date = None
+            message.x_labels = []
             try:
                 message.x_date =  dateutil.parser.parse(message.get('Date'))
+                try:
+                    message.x_labels = map(lambda s: s.strip(), message.get('X-Gmail-Labels').split(','))
+                    logging.debug("labels:  %s" % message.x_labels)
+                    if flags.label and len(message.x_labels) > 0 and (flags.label not in message.x_labels):
+                        logging.debug("skipping: \"%s\" does not contain label \"%s\"" % (message.x_labels, flags.label))
+                        continue
+                except:
+                    pass
                 if(flags.after and message.x_date and ( message.x_date < flags.after)):
                     logging.debug("skipping: date %s is before flags.after" % message.x_date)
                     continue
