@@ -62,6 +62,11 @@ def main(argv):
         '--dryrun',
         help='Dry-run',
         action='store_true')
+    argparser.add_argument(
+        '-r',
+        '--resume',
+        help='resume with message #',
+        required=False)
 
     # Authenticate and construct service
     scope = ("https://www.googleapis.com/auth/apps.groups.migration")
@@ -77,6 +82,10 @@ def main(argv):
     if (flags.before):
         flags.before = pytz.timezone('US/Pacific').localize(dateutil.parser.parse(flags.before))
         logging.info("only migrating messages before date: %s" % flags.before)
+    if (flags.resume):
+        flags.resume = int(flags.resume)
+        logging.info("resuming with id# %s" % flags.resume)
+
     mbox = mailbox.mbox(flags.mailbox, create=False)
     i, mboxLen = 0, len(mbox)
     print "mailbox size: %d messages" % mboxLen
@@ -87,13 +96,20 @@ def main(argv):
     try:
         for message in mbox:
             i += 1
-            message.x_date =  dateutil.parser.parse(message.get('Date'))
-            if(flags.after and ( message.x_date < flags.after)):
-                logging.debug("skipping: date %s is before flags.after" % message.x_date)
-                continue
-            if(flags.before and ( message.x_date > flags.before)):
-                logging.debug("skipping: date %s is after flags.before" % message.x_date)
-                continue
+            message.x_date = None
+            try:
+                message.x_date =  dateutil.parser.parse(message.get('Date'))
+                if(flags.after and message.x_date and ( message.x_date < flags.after)):
+                    logging.debug("skipping: date %s is before flags.after" % message.x_date)
+                    continue
+                if(flags.before and message.x_date and ( message.x_date > flags.before)):
+                    logging.debug("skipping: date %s is after flags.before" % message.x_date)
+                    continue
+                if flags.resume and ( i < flags.resume):
+                    logging.debug("skipping: message_id %s is before resume" % i)
+                    continue
+            except (ValueError,TypeError) as e:
+                logging.error(str(e))
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
             logging.debug("date: %s" % message.x_date)
