@@ -53,6 +53,11 @@ def main(argv):
         help='Only import after date',
         required=False)
     argparser.add_argument(
+        '-b',
+        '--before',
+        help='Only import before date',
+        required=False)
+    argparser.add_argument(
         '-n',
         '--dryrun',
         help='Dry-run',
@@ -69,6 +74,9 @@ def main(argv):
     if (flags.after):
         flags.after = pytz.timezone('US/Pacific').localize(dateutil.parser.parse(flags.after))
         logging.info("only migrating messages after date: %s" % flags.after)
+    if (flags.before):
+        flags.before = pytz.timezone('US/Pacific').localize(dateutil.parser.parse(flags.before))
+        logging.info("only migrating messages before date: %s" % flags.before)
     mbox = mailbox.mbox(flags.mailbox, create=False)
     i, mboxLen = 0, len(mbox)
     print "mailbox size: %d messages" % mboxLen
@@ -82,6 +90,9 @@ def main(argv):
             message.x_date =  dateutil.parser.parse(message.get('Date'))
             if(flags.after and ( message.x_date < flags.after)):
                 logging.debug("skipping: date %s is before flags.after" % message.x_date)
+                continue
+            if(flags.before and ( message.x_date > flags.before)):
+                logging.debug("skipping: date %s is after flags.before" % message.x_date)
                 continue
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
