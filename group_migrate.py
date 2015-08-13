@@ -125,7 +125,7 @@ def main(argv):
                 if flags.resume and ( i < flags.resume):
                     logging.debug("skipping: message_id %s is before resume" % i)
                     continue
-            except (ValueError,TypeError) as e:
+            except (ValueError,TypeError,AttributeError) as e:
                 logging.error(str(e))
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
