@@ -1,4 +1,4 @@
-# MailMan to Google Group Migrator
+# MailMan to Google Group Migrator [![Code Climate](https://codeclimate.com/github/burningmantech/mailman_group_migrator/badges/gpa.svg)](https://codeclimate.com/github/burningmantech/mailman_group_migrator)
 
 Command line tool to migrate Mailman mbox archives to Google Groups.
 
