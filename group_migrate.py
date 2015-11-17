@@ -13,6 +13,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',level=logging.DEBUG)
 import dateutil.parser
 import pytz
+import socket
 
 from apiclient.errors import HttpError,MediaUploadSizeError
 from apiclient.http import BatchHttpRequest
@@ -141,7 +142,7 @@ def main(argv):
                 logging.debug("response: %s" % result['responseCode'])
                 if flags.failed and result['responseCode'] != 'SUCCESS':
                     failbox.add(message)
-            except (MediaUploadSizeError,HttpError) as e:
+            except (MediaUploadSizeError,HttpError,socket.error) as e:
                 if flags.failed:
                     failbox.add(message)
                 logging.error( "%s: %s" % (message['message-id'],str(e)) )
