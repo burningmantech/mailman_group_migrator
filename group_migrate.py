@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 """
 Utility to migrate an mbox mailbox (from mailman, ideally) to Google Groups
 """
