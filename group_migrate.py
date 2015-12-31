@@ -13,6 +13,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',level=logging.DEBUG)
 import dateutil.parser
 import pytz
+import socket
 
 from apiclient.errors import HttpError,MediaUploadSizeError
 from apiclient.http import BatchHttpRequest
@@ -125,7 +126,7 @@ def main(argv):
                 if flags.resume and ( i < flags.resume):
                     logging.debug("skipping: message_id %s is before resume" % i)
                     continue
-            except (ValueError,TypeError) as e:
+            except (ValueError,TypeError,AttributeError) as e:
                 logging.error(str(e))
             logging.debug("message-id: %s" % message['message-id'] )
             logging.debug("subject: %s" % message['subject'])
@@ -141,7 +142,7 @@ def main(argv):
                 logging.debug("response: %s" % result['responseCode'])
                 if flags.failed and result['responseCode'] != 'SUCCESS':
                     failbox.add(message)
-            except (MediaUploadSizeError,HttpError) as e:
+            except (MediaUploadSizeError,HttpError,socket.error) as e:
                 if flags.failed:
                     failbox.add(message)
                 logging.error( "%s: %s" % (message['message-id'],str(e)) )

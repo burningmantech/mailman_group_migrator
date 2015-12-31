@@ -16,14 +16,48 @@ If the Domain Administrator has already setup the API, the ``client_secrets.json
 
 ## Usage
 
+```
+usage: group_migrate.py [-h] [--auth_host_name AUTH_HOST_NAME]
+                        [--noauth_local_webserver]
+                        [--auth_host_port [AUTH_HOST_PORT [AUTH_HOST_PORT ...]]]
+                        [--logging_level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                        -m MAILBOX -g GROUP [-f FAILED] [-v] [-a AFTER]
+                        [-b BEFORE] [-n] [-r RESUME] [-l LABEL]
 
-Usage: ``group_migrate.py [-h] -m MAILBOX -g GROUP [-f FAILED]``
+Utility to migrate an mbox mailbox (from mailman, ideally) to Google Groups
 
-Options:
+optional arguments:
+  -h, --help            show this help message and exit
+  --auth_host_name AUTH_HOST_NAME
+                        Hostname when running a local web server.
+  --noauth_local_webserver
+                        Do not run a local web server.
+  --auth_host_port [AUTH_HOST_PORT [AUTH_HOST_PORT ...]]
+                        Port web server should listen on.
+  --logging_level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Set the logging level of detail.
+  -m MAILBOX, --mailbox MAILBOX
+                        The mailbox file containing the messages to be
+                        migrated.
+  -g GROUP, --group GROUP
+                        The email address of the group to receive the migrated
+                        messages.
+  -f FAILED, --failed FAILED
+                        The mailbox file containing the messages that failed
+                        to be migrated.
+  -v, --verbose         Show progress
+  -a AFTER, --after AFTER
+                        Only import after date
+  -b BEFORE, --before BEFORE
+                        Only import before date
+  -n, --dryrun          Dry-run
+  -r RESUME, --resume RESUME
+                        resume with message #
+  -l LABEL, --label LABEL
+                        import matching label (X-Gmail-Labels)
 
-* -m | --mailbox: The mailbox to take messages from
-* -f | --failed: The mailbox to write failed messages to (Optional)
-* -g | --group: The Google Group to write messages to
+```
+
 
 ## Notes
 
